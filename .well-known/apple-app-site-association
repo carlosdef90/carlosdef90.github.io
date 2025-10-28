@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appID": "63VL8C4S7G.carlosdef90.WebViewPlayground",
+        "paths": ["/paypal-return", "/paypal-cancel"]
+      }
+    ]
+  }
+}
