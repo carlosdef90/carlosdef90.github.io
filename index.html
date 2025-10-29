@@ -1,3 +1,68 @@
-<html>
-  <h1>AppSwitch iOS 2</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PayPal Universal Links Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    h1 { color: #10b981; }
+    
+    a {
+      color: #60a5fa;
+      text-decoration: none;
+      margin: 1rem 0;
+      display: block;
+    }
+    
+    code {
+      background: rgba(255,255,255,0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>PayPal Universal Links</h1>
+    <p>This site is configured for Universal Links with the WebViewPlayground iOS app.</p>
+    
+    <hr style="margin: 2rem 0; opacity: 0.2;">
+    
+    <h3>Test Links:</h3>
+    <a href="/paypal-return?test=true">Test PayPal Return</a>
+    <a href="/paypal-cancel?test=true">Test PayPal Cancel</a>
+    
+    <hr style="margin: 2rem 0; opacity: 0.2;">
+    
+    <p style="font-size: 0.9rem; opacity: 0.8;">
+      AASA file: <a href="/.well-known/apple-app-site-association" style="font-size: 0.85rem;">
+        <code>apple-app-site-association</code>
+      </a>
+    </p>
+  </div>
+</body>
 </html>
+```
+
+---
+
+## **URLs resultantes:**
+```
+https://carlosdef90.github.io/                                          → index.html (home)
+https://carlosdef90.github.io/.well-known/apple-app-site-association   → AASA
+https://carlosdef90.github.io/paypal-return                             → paypal-return/index.html
+https://carlosdef90.github.io/paypal-return/                            → paypal-return/index.html
+https://carlosdef90.github.io/paypal-return?orderId=XXX                 → paypal-return/index.html (con params)
