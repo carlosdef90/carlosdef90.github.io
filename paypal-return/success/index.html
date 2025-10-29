@@ -1,1 +1,224 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Returning to App...</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 3rem 2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 2rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 1rem;
+    }
+    
+    .info {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      border-radius: 12px;
+      margin: 2rem 0;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .label {
+      font-weight: 600;
+      opacity: 0.8;
+    }
+    
+    .value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      margin-top: 1.5rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    #manual-section {
+      display: none;
+    }
+    
+    .emoji {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loading-section">
+      <div class="spinner"></div>
+      <h1>Returning to App...</h1>
+      <p>Please wait while we redirect you back to the app.</p>
+    </div>
+    
+    <div id="manual-section">
+      <div class="emoji">📱</div>
+      <h1>Almost Done!</h1>
+      <p>Tap the button below to return to the app:</p>
+      
+      <div class="info" id="info-container">
+        <!-- Se llenará con JavaScript -->
+      </div>
+      
+      <a href="#" id="open-app-link" class="button">
+        Open WebViewPlayground
+      </a>
+      
+      <p style="font-size: 0.85rem; margin-top: 2rem; opacity: 0.7;">
+        If you see a popup, tap "Open" to continue.
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    console.log('=== PayPal Return Page ===');
+    console.log('Full URL:', window.location.href);
+    
+    // Extraer todos los parámetros
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status') || 'success';
+    const orderId = params.get('orderId') || '';
+    const token = params.get('token') || '';
+    const payerID = params.get('PayerID') || '';
+    const ba_token = params.get('ba_token') || '';
+    
+    console.log('Parameters extracted:', {
+      status,
+      orderId,
+      token,
+      payerID,
+      ba_token
+    });
+    
+    // El orderId puede venir en diferentes parámetros
+    const finalOrderId = orderId || token || ba_token;
+    
+    console.log('Final Order ID:', finalOrderId);
+    
+    // Construir deep link con TODOS los parámetros
+    const deepLinkParams = new URLSearchParams();
+    if (finalOrderId) deepLinkParams.append('orderId', finalOrderId);
+    if (status) deepLinkParams.append('status', status);
+    if (payerID) deepLinkParams.append('PayerID', payerID);
+    if (token && token !== finalOrderId) deepLinkParams.append('token', token);
+    
+    const deepLink = `webviewplayground://paypal-return?${deepLinkParams.toString()}`;
+    
+    console.log('Deep link constructed:', deepLink);
+    
+    // ✅ INTENTAR ABRIR LA APP INMEDIATAMENTE
+    console.log('Attempting to open app...');
+    window.location.href = deepLink;
+    
+    // Esperar 2 segundos para verificar si la app se abrió
+    setTimeout(() => {
+      console.log('App did not open automatically, showing manual button');
+      
+      // Si después de 2 segundos seguimos aquí, mostrar botón manual
+      document.getElementById('loading-section').style.display = 'none';
+      document.getElementById('manual-section').style.display = 'block';
+      
+      // Llenar info
+      const infoHTML = `
+        <div class="info-row">
+          <span class="label">Order ID:</span>
+          <span class="value">${finalOrderId || 'N/A'}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Status:</span>
+          <span class="value">${status}</span>
+        </div>
+        ${payerID ? `
+        <div class="info-row">
+          <span class="label">Payer ID:</span>
+          <span class="value">${payerID}</span>
+        </div>
+        ` : ''}
+      `;
+      
+      document.getElementById('info-container').innerHTML = infoHTML;
+      document.getElementById('open-app-link').href = deepLink;
+      
+    }, 2000);
+    
+    // Log para debugging
+    console.log('Waiting 2 seconds to see if app opens...');
+  </script>
+</body>
+</html>
