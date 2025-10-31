@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout - Zara Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      background: #fff;
+      color: #000;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    .header {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e5e5;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: #000;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+    
+    .payment-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .payment-card {
+      border: 1px solid #e5e5e5;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #fff;
+      position: relative;
+    }
+    
+    .payment-card:hover {
+      border-color: #000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .payment-card.selected {
+      border-color: #000;
+      border-width: 2px;
+      background: #fafafa;
+    }
+    
+    .payment-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .payment-name {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      color: #000;
+    }
+    
+    .checkmark {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: #000;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+    }
+    
+    .payment-card.selected .checkmark {
+      display: flex;
+    }
+    
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: #000;
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      background: #333;
+    }
+    
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-secondary {
+      background: #fff;
+      color: #000;
+      border: 1px solid #000;
+    }
+    
+    .btn-secondary:hover {
+      background: #f5f5f5;
+    }
+    
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    
+    .info-text {
+      font-size: 0.75rem;
+      color: #666;
+      text-align: center;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+    
+    .total {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e5e5e5;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    
+    .total-label {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.8rem;
+    }
+    
+    .total-amount {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      
+      .payment-card {
+        min-height: 100px;
+        padding: 1rem 0.5rem;
+      }
+      
+      .payment-icon {
+        font-size: 2rem;
+      }
+      
+      .payment-name {
+        font-size: 0.65rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="header">
+    <div class="logo">ZARA</div>
+  </div>
+  
+  <div class="container">
+    
+    <div class="total">
+      <span class="total-label">Total</span>
+      <span class="total-amount">$ 68.45</span>
+    </div>
+    
+    <h2 class="section-title">Select a Payment Method</h2>
+    
+    <div class="payment-grid">
+      
+      <!-- Credit/Debit Card -->
+      <div class="payment-card" data-method="card">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">💳</div>
+        <div class="payment-name">Credit/Debit Card</div>
+      </div>
+      
+      <!-- PayPal -->
+      <div class="payment-card" data-method="paypal">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="#0070ba">
+            <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.795.679l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L9.21 7.48a.964.964 0 01.952-.813h4.92c.953 0 1.716.116 2.289.349M6.5 6.5h5.996c1.152 0 2.03.186 2.686.57.328.192.603.426.827.7.224.275.397.59.52.945.245.71.31 1.58.194 2.614-.354 3.145-1.935 4.776-4.576 4.776h-.832a.483.483 0 00-.476.406l-.772 4.902a.483.483 0 01-.477.406H6.723a.483.483 0 01-.477-.558z"/>
+          </svg>
+        </div>
+        <div class="payment-name">PayPal</div>
+      </div>
+      
+      <!-- PayPal Pay Later -->
+      <div class="payment-card" data-method="paylater">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="#0070ba">
+            <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.795.679l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L9.21 7.48a.964.964 0 01.952-.813h4.92c.953 0 1.716.116 2.289.349M6.5 6.5h5.996c1.152 0 2.03.186 2.686.57.328.192.603.426.827.7.224.275.397.59.52.945.245.71.31 1.58.194 2.614-.354 3.145-1.935 4.776-4.576 4.776h-.832a.483.483 0 00-.476.406l-.772 4.902a.483.483 0 01-.477.406H6.723a.483.483 0 01-.477-.558z"/>
+          </svg>
+        </div>
+        <div class="payment-name">PayPal Pay Later</div>
+      </div>
+      
+      <!-- Venmo -->
+      <div class="payment-card" data-method="venmo">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="#3d95ce">
+            <path d="M18.75 4.5l-1.5 9-5.25 6h-4.5l5.25-11.25-1.5-3.75z"/>
+          </svg>
+        </div>
+        <div class="payment-name">Venmo</div>
+      </div>
+      
+      <!-- Cash App -->
+      <div class="payment-card" data-method="cashapp">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">💵</div>
+        <div class="payment-name">Cash App Afterpay</div>
+      </div>
+      
+      <!-- Gift Card -->
+      <div class="payment-card" data-method="giftcard">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">🎁</div>
+        <div class="payment-name">Gift Card</div>
+      </div>
+      
+      <!-- In Card -->
+      <div class="payment-card" data-method="incard">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">🔖</div>
+        <div class="payment-name">In Card</div>
+      </div>
+      
+      <!-- Google Pay -->
+      <div class="payment-card" data-method="googlepay">
+        <div class="checkmark">✓</div>
+        <div class="payment-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+            <path fill="#fff" d="M11.99 18.54v-3.13h.92c1.99 0 3.63-1.64 3.63-3.63s-1.64-3.63-3.63-3.63h-2.9v10.39h1.98zm.92-8.41c.91 0 1.65.74 1.65 1.65s-.74 1.65-1.65 1.65h-.92V10.13h.92z"/>
+          </svg>
+        </div>
+        <div class="payment-name">Google Pay</div>
+      </div>
+      
+    </div>
+    
+    <h2 class="section-title">Payment Flow</h2>
+    
+    <div class="action-buttons">
+      
+      <!-- Botón 1: Checkout Redirect -->
+      <button id="btn-redirect" class="btn btn-primary" disabled>
+        Pay with PayPal
+      </button>
+      
+      <!-- Botón 2: AppSwitch -->
+      <button id="btn-appswitch" class="btn btn-secondary" disabled>
+        Pay with PayPal (App Switch)
+      </button>
+      
+    </div>
+    
+    <p class="info-text" id="info-text">
+      Select PayPal to continue
+    </p>
+    
+  </div>
+  
+  <script>
+    // ⚠️ CREDENCIALES SANDBOX - Solo para demo
+    const PAYPAL_CLIENT_ID = "AZk3oF9fGkjOYE0rHWC7C4SsjCTTeG0veIMah7nD0tjIGP7cB0pQBPUuQHm5KrkyWHF3mMkuXU4SVPEG";
+    const PAYPAL_CLIENT_SECRET = "EAZaRYGid19omyyMtD9yGeqB6e31SPQQZ8XK6eFNUJENDa6WDqkx1E5xTbl9J4cRZTsNPK9E1YL7EFVl";
+    const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
+    
+    let accessToken = null;
+    let selectedMethod = null;
+    
+    // Selección de método de pago
+    const cards = document.querySelectorAll('.payment-card');
+    const btnRedirect = document.getElementById('btn-redirect');
+    const btnAppSwitch = document.getElementById('btn-appswitch');
+    const infoText = document.getElementById('info-text');
+    
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        // Remover selección previa
+        cards.forEach(c => c.classList.remove('selected'));
+        
+        // Seleccionar esta card
+        card.classList.add('selected');
+        selectedMethod = card.dataset.method;
+        
+        console.log('Selected method:', selectedMethod);
+        
+        // Habilitar botones solo si es PayPal
+        if (selectedMethod === 'paypal') {
+          btnRedirect.disabled = false;
+          btnAppSwitch.disabled = false;
+          infoText.textContent = 'You will be redirected to PayPal to complete payment.';
+        } else {
+          btnRedirect.disabled = true;
+          btnAppSwitch.disabled = true;
+          infoText.textContent = `${card.querySelector('.payment-name').textContent} - Coming soon`;
+        }
+      });
+    });
+    
+    // Obtener access token
+    async function getAccessToken() {
+      if (accessToken) {
+        return accessToken;
+      }
+      
+      console.log('🔑 Getting access token...');
+      
+      const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`);
+      
+      const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+      });
+      
+      const data = await response.json();
+      
+      if (data.access_token) {
+        console.log('✅ Access token obtained');
+        accessToken = data.access_token;
+        return accessToken;
+      } else {
+        console.error('❌ Failed to get token');
+        throw new Error('Failed to get access token');
+      }
+    }
+    
+    // Crear orden de PayPal
+    async function createPayPalOrder(amount, currency) {
+      console.log(`🚀 Creating PayPal order: ${amount} ${currency}`);
+      
+      const token = await getAccessToken();
+      
+      const orderBody = {
+        intent: 'CAPTURE',
+        purchase_units: [{
+          amount: {
+            currency_code: currency,
+            value: amount
+          },
+          description: 'Zara Demo Purchase'
+        }],
+        payment_source: {
+          paypal: {
+            experience_context: {
+              payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
+              brand_name: 'Zara Demo',
+              locale: 'en-US',
+              landing_page: 'LOGIN',
+              shipping_preference: 'NO_SHIPPING',
+              user_action: 'PAY_NOW'
+            }
+          }
+        }
+      };
+      
+      const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderBody)
+      });
+      
+      const data = await response.json();
+      
+      if (data.id) {
+        console.log('✅ Order created:', data.id);
+        
+        // Buscar approval URL
+        let approvalURL = null;
+        if (data.links) {
+          for (const link of data.links) {
+            if (link.rel === 'payer-action' || link.rel === 'approve') {
+              approvalURL = link.href;
+              break;
+            }
+          }
+        }
+        
+        if (!approvalURL) {
+          approvalURL = `https://www.sandbox.paypal.com/checkoutnow?token=${data.id}`;
+        }
+        
+        return approvalURL;
+      } else {
+        console.error('❌ Order creation failed:', data);
+        throw new Error(data.message || 'Failed to create order');
+      }
+    }
+    
+    // BOTÓN 1: Checkout Redirect (crea orden y redirige en webview)
+    btnRedirect.addEventListener('click', async () => {
+      if (selectedMethod !== 'paypal') return;
+      
+      btnRedirect.disabled = true;
+      btnRedirect.textContent = 'Creating order...';
+      
+      try {
+        const approvalURL = await createPayPalOrder('68.45', 'USD');
+        
+        console.log('🔗 Redirecting to:', approvalURL);
+        
+        // Redirigir en el mismo webview
+        window.location.href = approvalURL;
+        
+      } catch (error) {
+        console.error('❌ Error:', error);
+        alert('Error: ' + error.message);
+        btnRedirect.disabled = false;
+        btnRedirect.textContent = 'Pay with PayPal';
+      }
+    });
+    
+    // BOTÓN 2: AppSwitch (envía info al componente nativo)
+    btnAppSwitch.addEventListener('click', () => {
+      if (selectedMethod !== 'paypal') return;
+      
+      console.log('📱 Sending order info to native component...');
+      
+      // Enviar al componente nativo
+      if (window.webkit?.messageHandlers?.appBridge) {
+        window.webkit.messageHandlers.appBridge.postMessage({
+          action: 'paypal_appswitch_native',
+          amount: '68.45',
+          currency: 'USD',
+          orderId: 'ZARA-' + Date.now(),
+          items: [
+            { name: 'Zara Shirt', quantity: 1, price: '34.95' },
+            { name: 'Zara Pants', quantity: 1, price: '33.50' }
+          ]
+        });
+      } else {
+        alert('Native bridge not available');
+      }
+    });
+    
+    // Escuchar respuesta del nativo
+    window.addEventListener('message', (event) => {
+      console.log('Message from native:', event.data);
+      
+      if (event.data.type === 'PAYPAL_SUCCESS') {
+        document.body.innerHTML = `
+          <div style="text-align: center; padding: 3rem; font-family: -apple-system;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">Payment Successful</h1>
+            <p style="color: #666; margin-bottom: 2rem;">Your order has been confirmed.</p>
+            <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+              <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Order ID:</strong> ${event.data.orderId || 'N/A'}</p>
+              <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Payment ID:</strong> ${event.data.paymentId || 'N/A'}</p>
+            </div>
+            <button onclick="location.reload()" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;">
+              Continue Shopping
+            </button>
+          </div>
+        `;
+      }
+    });
+  </script>
+  
+</body>
+</html>
