@@ -1,530 +1,597 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Checkout - AppSwitch Demo</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-      background: #fff;
-      color: #000;
-      padding: 0;
-      min-height: 100vh;
-    }
-    
-    .header {
-      padding: 1rem;
-      border-bottom: 1px solid #e5e5e5;
-      text-align: center;
-    }
-    
-    .logo {
-      font-size: 2rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      color: #000;
-    }
-    
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-    
-    .section-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #666;
-      margin-bottom: 1.5rem;
-      margin-top: 2rem;
-    }
-    
-    .section-title:first-of-type {
-      margin-top: 0;
-    }
-    
-    .payment-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    
-    .payment-card {
-      border: 1px solid #e5e5e5;
-      padding: 1.5rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 120px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: #fff;
-      position: relative;
-    }
-    
-    .payment-card.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      background: #f9f9f9;
-    }
-    
-    .payment-card:not(.disabled):hover {
-      border-color: #000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .payment-card.selected {
-      border-color: #000;
-      border-width: 2px;
-      background: #fafafa;
-    }
-    
-    .payment-card.disabled.selected {
-      border-width: 1px;
-      background: #f9f9f9;
-    }
-    
-    .payment-icon {
-      font-size: 2.5rem;
-      margin-bottom: 0.75rem;
-    }
-    
-    .payment-name {
-      font-size: 0.7rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-align: center;
-      color: #000;
-    }
-    
-    .checkmark {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 20px;
-      height: 20px;
-      background: #000;
-      border-radius: 50%;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 12px;
-    }
-    
-    .payment-card.selected:not(.disabled) .checkmark {
-      display: flex;
-    }
-    
-    .btn {
-      width: 100%;
-      padding: 1rem;
-      border: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      background: #000;
-      color: #fff;
-    }
-    
-    .btn:hover:not(:disabled) {
-      background: #333;
-    }
-    
-    .btn:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-    
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    
-    .info-text {
-      font-size: 0.75rem;
-      color: #666;
-      text-align: center;
-      margin-top: 1rem;
-      line-height: 1.5;
-    }
-    
-    .total {
-      display: flex;
-      justify-content: space-between;
-      padding: 1rem 0;
-      border-bottom: 1px solid #e5e5e5;
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-    }
-    
-    .total-label {
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-size: 0.8rem;
-    }
-    
-    .total-amount {
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-    
-    .coming-soon {
-      font-size: 0.6rem;
-      color: #999;
-      margin-top: 0.25rem;
-    }
-    
-    @media (max-width: 480px) {
-      .container {
-        padding: 1.5rem 1rem;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Checkout - AppSwitch Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      
-      .payment-card {
-        min-height: 100px;
-        padding: 1rem 0.5rem;
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial,
+          sans-serif;
+        background: #fff;
+        color: #000;
+        padding: 0;
+        min-height: 100vh;
       }
-      
-      .payment-icon {
+
+      .header {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+        text-align: center;
+      }
+
+      .logo {
         font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        color: #000;
       }
-      
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #666;
+        margin-bottom: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .section-title:first-of-type {
+        margin-top: 0;
+      }
+
+      .payment-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .payment-card {
+        border: 1px solid #e5e5e5;
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+        position: relative;
+      }
+
+      .payment-card.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: #f9f9f9;
+      }
+
+      .payment-card:not(.disabled):hover {
+        border-color: #000;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .payment-card.selected {
+        border-color: #000;
+        border-width: 2px;
+        background: #fafafa;
+      }
+
+      .payment-card.disabled.selected {
+        border-width: 1px;
+        background: #f9f9f9;
+      }
+
+      .payment-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+      }
+
       .payment-name {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+        color: #000;
       }
-    }
-  </style>
-</head>
-<body>
-  
-  <div class="header">
-    <div class="logo">MERCHANT</div>
-  </div>
-  
-  <div class="container">
-    
-    <div class="total">
-      <span class="total-label">Total</span>
-      <span class="total-amount">$ 68.45</span>
+
+      .checkmark {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        background: #000;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+      }
+
+      .payment-card.selected:not(.disabled) .checkmark {
+        display: flex;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        background: #000;
+        color: #fff;
+      }
+
+      .btn:hover:not(:disabled) {
+        background: #333;
+      }
+
+      .btn:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .info-text {
+        font-size: 0.75rem;
+        color: #666;
+        text-align: center;
+        margin-top: 1rem;
+        line-height: 1.5;
+      }
+
+      .total {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e5e5e5;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+      }
+
+      .total-label {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.8rem;
+      }
+
+      .total-amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .coming-soon {
+        font-size: 0.6rem;
+        color: #999;
+        margin-top: 0.25rem;
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          padding: 1.5rem 1rem;
+        }
+
+        .payment-card {
+          min-height: 100px;
+          padding: 1rem 0.5rem;
+        }
+
+        .payment-icon {
+          font-size: 2rem;
+        }
+
+        .payment-name {
+          font-size: 0.65rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="logo">MERCHANT</div>
     </div>
-    
-    <h2 class="section-title">Select a Payment Method</h2>
-    
-    <div class="payment-grid">
-      
-      <!-- Credit/Debit Card - DISABLED -->
-      <div class="payment-card" data-method="card">
-        <div class="checkmark">✓</div>
-        <div class="payment-icon">💳</div>
-        <div class="payment-name">Credit/Debit Card</div>
-        <div class="coming-soon">Coming soon</div>
+
+    <div class="container">
+      <div class="total">
+        <span class="total-label">Total</span>
+        <span class="total-amount">$ 68.45</span>
       </div>
-      
-      <!-- Gift Card - DISABLED -->
-      <div class="payment-card " data-method="giftcard">
-        <div class="checkmark">✓</div>
-        <div class="payment-icon">🎁</div>
-        <div class="payment-name">Gift Card</div>
-        <div class="coming-soon">Coming soon</div>
-      </div>
-      
-      <!-- PayPal (Checkout Redirect) -->
-      <div class="payment-card" data-method="paypal-redirect">
-        <div class="checkmark">✓</div>
-        <div class="payment-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="#0070ba">
-            <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.795.679l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L9.21 7.48a.964.964 0 01.952-.813h4.92c.953 0 1.716.116 2.289.349"/>
-          </svg>
+
+      <h2 class="section-title">Select a Payment Method</h2>
+
+      <div class="payment-grid">
+        <!-- Credit/Debit Card - DISABLED -->
+        <div class="payment-card" data-method="card">
+          <div class="checkmark">✓</div>
+          <div class="payment-icon">💳</div>
+          <div class="payment-name">Credit/Debit Card</div>
+          <div class="coming-soon">Coming soon</div>
         </div>
-        <div class="payment-name">PayPal</div>
+
+        <!-- Gift Card - DISABLED -->
+        <div class="payment-card" data-method="giftcard">
+          <div class="checkmark">✓</div>
+          <div class="payment-icon">🎁</div>
+          <div class="payment-name">Gift Card</div>
+          <div class="coming-soon">Coming soon</div>
+        </div>
+
+        <!-- PayPal (Checkout Redirect) -->
+        <div class="payment-card" data-method="paypal-redirect">
+          <div class="checkmark">✓</div>
+          <div class="payment-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="#0070ba">
+              <path
+                d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.795.679l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L9.21 7.48a.964.964 0 01.952-.813h4.92c.953 0 1.716.116 2.289.349"
+              />
+            </svg>
+          </div>
+          <div class="payment-name">PayPal</div>
+        </div>
+
+        <!-- PayPal (AppSwitch) -->
+        <div class="payment-card" data-method="paypal-appswitch">
+          <div class="checkmark">✓</div>
+          <div class="payment-icon">📱</div>
+          <div class="payment-name">PayPal AppSwitch</div>
+        </div>
       </div>
-      
-      <!-- PayPal (AppSwitch) -->
-      <div class="payment-card" data-method="paypal-appswitch">
-        <div class="checkmark">✓</div>
-        <div class="payment-icon">📱</div>
-        <div class="payment-name">PayPal AppSwitch</div>
-      </div>
-      
+
+      <button id="btn-pay" class="btn" disabled>Continue to Payment</button>
+
+      <p class="info-text" id="info-text">
+        Select a payment method to continue
+      </p>
     </div>
-    
-    <button id="btn-pay" class="btn" disabled>
-      Continue to Payment
-    </button>
-    
-    <p class="info-text" id="info-text">
-      Select a payment method to continue
-    </p>
-    
-  </div>
-  
-  <script>
-    // Al cargar la página, verificar si es un return de PayPal
-window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const payment = params.get('payment');
-    const token = params.get('token');
-    const PayerID = params.get('PayerID');
-    
-    if (payment === 'success' && token) {
-        console.log('✅ Payment return detected');
-        console.log('Token:', token);
-        console.log('PayerID:', PayerID);
-        
-        // Mostrar success
-        document.body.innerHTML = `
+
+    <script>
+      // Al cargar la página, verificar si es un return de PayPal
+      window.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const payment = params.get("payment");
+        const token = params.get("token");
+        const PayerID = params.get("PayerID");
+
+        if (payment === "success" && token) {
+          console.log("✅ Payment return detected");
+          console.log("Token:", token);
+          console.log("PayerID:", PayerID);
+
+          // Mostrar success
+          document.body.innerHTML = `
             <div style="text-align: center; padding: 3rem 1rem; font-family: -apple-system;">
                 <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
                 <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">Payment Successful</h1>
                 <p style="color: #666; margin-bottom: 2rem;">Your order has been confirmed.</p>
                 <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
                     <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Order ID:</strong> ${token}</p>
-                    <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Payer ID:</strong> ${PayerID || 'N/A'}</p>
+                    <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Payer ID:</strong> ${
+                      PayerID || "N/A"
+                    }</p>
                 </div>
                 <button onclick="location.href='/checkout/'" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; cursor: pointer; width: 100%;">
                     New Payment
                 </button>
             </div>
         `;
-        
-    } else if (payment === 'cancel') {
-        console.log('❌ Payment cancelled');
-        alert('Payment was cancelled');
-        // Recargar para volver al checkout
-        location.href = '/checkout/';
-    }
-});
+        } else if (payment === "cancel") {
+          console.log("❌ Payment cancelled");
+          alert("Payment was cancelled");
+          // Recargar para volver al checkout
+          location.href = "/checkout/";
+        }
+      });
 
-    // ⚠️ CREDENCIALES SANDBOX
-    const PAYPAL_CLIENT_ID = "AZ0YQDOagH9Y6h9Q0OflBOfdVBChMWeIVL6EtZUrgIm7d6m67xugAeMUbSnTpFvWb5D4xYx9YCzJQA4T";
-    const PAYPAL_CLIENT_SECRET = "EImmF9rf6T4c_6p39HtK13GDKdhl2G6k83DqKWgz-zbOkC1XCBDpMw2EUq-QGdBNFPhrR9fvodCtfYd8";
-    const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
-    
-    let accessToken = null;
-    let selectedMethod = null;
-    
-    const cards = document.querySelectorAll('.payment-card');
-    const btnPay = document.getElementById('btn-pay');
-    const infoText = document.getElementById('info-text');
-    
-    // Manejar selección de método de pago
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        // Ignorar clicks en cards disabled
-        if (card.classList.contains('disabled')) {
-          return;
-        }
-        
-        // Remover selección previa
-        cards.forEach(c => c.classList.remove('selected'));
-        
-        // Seleccionar esta card
-        card.classList.add('selected');
-        selectedMethod = card.dataset.method;
-        
-        console.log('Selected:', selectedMethod);
-        
-        // Actualizar botón y texto según método
-        if (selectedMethod === 'paypal-redirect') {
-          btnPay.disabled = false;
-          btnPay.textContent = 'Pay with PayPal';
-          infoText.textContent = 'You will be redirected to PayPal website in this webview.';
-          
-        } else if (selectedMethod === 'paypal-appswitch') {
-          btnPay.disabled = false;
-          btnPay.textContent = 'Pay with PayPal (App Switch)';
-          infoText.textContent = 'Payment will be handled by the native app component.';
-          
-        } else {
-          btnPay.disabled = true;
-          btnPay.textContent = 'Continue to Payment';
-          infoText.textContent = 'This payment method is coming soon.';
-        }
+      // ⚠️ CREDENCIALES SANDBOX
+      const PAYPAL_CLIENT_ID =
+        "AZ0YQDOagH9Y6h9Q0OflBOfdVBChMWeIVL6EtZUrgIm7d6m67xugAeMUbSnTpFvWb5D4xYx9YCzJQA4T";
+      const PAYPAL_CLIENT_SECRET =
+        "EImmF9rf6T4c_6p39HtK13GDKdhl2G6k83DqKWgz-zbOkC1XCBDpMw2EUq-QGdBNFPhrR9fvodCtfYd8";
+      const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
+
+      let accessToken = null;
+      let selectedMethod = null;
+
+      const cards = document.querySelectorAll(".payment-card");
+      const btnPay = document.getElementById("btn-pay");
+      const infoText = document.getElementById("info-text");
+
+      // Manejar selección de método de pago
+      cards.forEach((card) => {
+        card.addEventListener("click", () => {
+          // Ignorar clicks en cards disabled
+          if (card.classList.contains("disabled")) {
+            return;
+          }
+
+          // Remover selección previa
+          cards.forEach((c) => c.classList.remove("selected"));
+
+          // Seleccionar esta card
+          card.classList.add("selected");
+          selectedMethod = card.dataset.method;
+
+          console.log("Selected:", selectedMethod);
+
+          // Actualizar botón y texto según método
+          if (selectedMethod === "paypal-redirect") {
+            btnPay.disabled = false;
+            btnPay.textContent = "Pay with PayPal";
+            infoText.textContent =
+              "You will be redirected to PayPal website in this webview.";
+          } else if (selectedMethod === "paypal-appswitch") {
+            btnPay.disabled = false;
+            btnPay.textContent = "Pay with PayPal (App Switch)";
+            infoText.textContent =
+              "Payment will be handled by the native app component.";
+          } else {
+            btnPay.disabled = true;
+            btnPay.textContent = "Continue to Payment";
+            infoText.textContent = "This payment method is coming soon.";
+          }
+        });
       });
-    });
-    
-    // Obtener access token
-    async function getAccessToken() {
-      if (accessToken) return accessToken;
-      
-      console.log('🔑 Getting token...');
-      
-      const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`);
-      
-      const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'grant_type=client_credentials'
-      });
-      
-      const data = await response.json();
-      
-      if (data.access_token) {
-        console.log('✅ Token obtained');
-        accessToken = data.access_token;
-        return accessToken;
+
+      // Obtener access token
+      async function getAccessToken() {
+        if (accessToken) return accessToken;
+
+        console.log("🔑 Getting token...");
+
+        const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`);
+
+        const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${auth}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: "grant_type=client_credentials",
+        });
+
+        const data = await response.json();
+
+        if (data.access_token) {
+          console.log("✅ Token obtained");
+          accessToken = data.access_token;
+          return accessToken;
+        }
+
+        throw new Error("Failed to get token");
       }
-      
-      throw new Error('Failed to get token');
-    }
-    
-    // Crear orden
-    async function createPayPalOrder(amount, currency) {
-      console.log(`🚀 Creating order: ${amount} ${currency}`);
-      
-      const token = await getAccessToken();
-      
-      const orderBody = {
-        intent: 'CAPTURE',
-        purchase_units: [{
-            amount: {
+
+      // Crear orden
+      async function createPayPalOrder(amount, currency) {
+        console.log(`🚀 Creating order: ${amount} ${currency}`);
+
+        const token = await getAccessToken();
+
+        const orderBody = {
+          intent: "CAPTURE",
+          purchase_units: [
+            {
+              amount: {
                 currency_code: currency,
-                value: amount
+                value: amount,
+              },
+              description: "Zara Demo Purchase",
             },
-            description: 'Zara Demo Purchase'
-        }],
-        payment_source: {
+          ],
+          payment_source: {
             paypal: {
-                experience_context: {
-                    payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
-                    brand_name: 'Zara',
-                    locale: 'en-US',
-                    landing_page: 'LOGIN',
-                    shipping_preference: 'NO_SHIPPING',
-                    user_action: 'PAY_NOW',
-                    // ✅ AGREGAR return URLs
-                    return_url: 'https://carlosdef90.github.io/checkout/?payment=success',
-                    cancel_url: 'https://carlosdef90.github.io/checkout/?payment=cancel'
-                }
-            }
-        }
-    };
-      
-      const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderBody)
-      });
-      
-      const data = await response.json();
-      
-      if (data.id) {
-        console.log('✅ Order:', data.id);
-        
-        // Buscar approval URL
-        let approvalURL = null;
-        if (data.links) {
-          for (const link of data.links) {
-            if (link.rel === 'payer-action' || link.rel === 'approve') {
-              approvalURL = link.href;
-              break;
+              experience_context: {
+                payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
+                brand_name: "Zara",
+                locale: "en-US",
+                landing_page: "LOGIN",
+                shipping_preference: "NO_SHIPPING",
+                user_action: "PAY_NOW",
+                // ✅ AGREGAR return URLs
+                return_url:
+                  "https://carlosdef90.github.io/checkout/?payment=success",
+                cancel_url:
+                  "https://carlosdef90.github.io/checkout/?payment=cancel",
+              },
+            },
+          },
+        };
+
+        const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderBody),
+        });
+
+        const data = await response.json();
+
+        if (data.id) {
+          console.log("✅ Order:", data.id);
+
+          // Buscar approval URL
+          let approvalURL = null;
+          if (data.links) {
+            for (const link of data.links) {
+              if (link.rel === "payer-action" || link.rel === "approve") {
+                approvalURL = link.href;
+                break;
+              }
             }
           }
+
+          return (
+            approvalURL ||
+            `https://www.sandbox.paypal.com/checkoutnow?token=${data.id}`
+          );
         }
-        
-        return approvalURL || `https://www.sandbox.paypal.com/checkoutnow?token=${data.id}`;
+
+        throw new Error(data.message || "Failed to create order");
       }
-      
-      throw new Error(data.message || 'Failed to create order');
-    }
-    
-    // Click en botón Pay
-    btnPay.addEventListener('click', async () => {
-      if (!selectedMethod) return;
-      
-      btnPay.disabled = true;
-      
-      if (selectedMethod === 'paypal-redirect') {
-        // Opción 1: Checkout Redirect (crea orden y redirige en webview)
-        console.log('🌐 PayPal Redirect flow');
-        btnPay.textContent = 'Creating order...';
-        
-        try {
-          const approvalURL = await createPayPalOrder('68.45', 'USD');
-          console.log('🔗 Redirecting to:', approvalURL);
-          
-          // Redirigir en el webview
-          window.location.href = approvalURL;
-          
-        } catch (error) {
-          console.error('❌ Error:', error);
-          alert('Error: ' + error.message);
-          btnPay.disabled = false;
-          btnPay.textContent = 'Pay with PayPal';
+
+      // Click en botón Pay
+      btnPay.addEventListener("click", async () => {
+        if (!selectedMethod) return;
+
+        btnPay.disabled = true;
+
+        if (selectedMethod === "paypal-redirect") {
+          // Opción 1: Checkout Redirect (crea orden y redirige en webview)
+          console.log("🌐 PayPal Redirect flow");
+          btnPay.textContent = "Creating order...";
+
+          try {
+            const approvalURL = await createPayPalOrder("68.45", "USD");
+            console.log("🔗 Redirecting to:", approvalURL);
+
+            // Redirigir en el webview
+            window.location.href = approvalURL;
+          } catch (error) {
+            console.error("❌ Error:", error);
+            alert("Error: " + error.message);
+            btnPay.disabled = false;
+            btnPay.textContent = "Pay with PayPal";
+          }
+        } else if (selectedMethod === "paypal-appswitch") {
+          // Opción 2: AppSwitch (envía info al nativo)
+          console.log("📱 PayPal AppSwitch flow");
+          btnPay.textContent = "Sending to native...";
+
+          if (window.webkit?.messageHandlers?.appBridge) {
+            window.webkit.messageHandlers.appBridge.postMessage({
+              action: "paypal_appswitch_native",
+              amount: "68.45",
+              currency: "USD",
+              orderId: "ZARA-" + Date.now(),
+            });
+          } else {
+            alert("Native bridge not available");
+            btnPay.disabled = false;
+            btnPay.textContent = "Pay with PayPal (App Switch)";
+          }
         }
-        
-      } else if (selectedMethod === 'paypal-appswitch') {
-        // Opción 2: AppSwitch (envía info al nativo)
-        console.log('📱 PayPal AppSwitch flow');
-        btnPay.textContent = 'Sending to native...';
-        
+      });
+
+      // Escuchar mensajes del componente nativo
+      window.addEventListener("message", (event) => {
+        console.log("📨 Message from native:", event.data);
+
+        if (event.data.type === "PAYPAL_SUCCESS") {
+          console.log("✅ Payment success received from native");
+
+          // Mostrar pantalla de éxito
+          document.body.innerHTML = `
+            <div class="header">
+                <div class="logo">ZARA</div>
+            </div>
+            
+            <div class="container" style="text-align: center; padding-top: 3rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                
+                <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">
+                    Payment Successful
+                </h1>
+                
+                <p style="color: #666; margin-bottom: 2rem; font-size: 0.9rem;">
+                    Your order has been confirmed.
+                </p>
+                
+                <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #e5e5e5;">
+                        <span style="font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Order ID</span>
+                        <span style="font-family: monospace; font-size: 0.75rem;">${
+                          event.data.orderId || "N/A"
+                        }</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                        <span style="font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Capture ID</span>
+                        <span style="font-family: monospace; font-size: 0.75rem;">${
+                          event.data.captureId || "N/A"
+                        }</span>
+                    </div>
+                </div>
+                
+                <button onclick="location.href='/checkout/'" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%; margin-bottom: 1rem;">
+                    Back to Checkout
+                </button>
+                
+                <button onclick="closeWebView()" style="padding: 1rem 2rem; background: white; color: #000; border: 1px solid #000; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%;">
+                    Close
+                </button>
+            </div>
+        `;
+        } else if (event.data.type === "PAYPAL_CANCEL") {
+          console.log("❌ Payment cancelled");
+
+          // Mostrar pantalla de cancelación
+          document.body.innerHTML = `
+            <div class="header">
+                <div class="logo">ZARA</div>
+            </div>
+            
+            <div class="container" style="text-align: center; padding-top: 3rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
+                
+                <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">
+                    Payment Cancelled
+                </h1>
+                
+                <p style="color: #666; margin-bottom: 2rem; font-size: 0.9rem;">
+                    Your payment was not completed.
+                </p>
+                
+                <button onclick="location.href='/checkout/'" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%; margin-bottom: 1rem;">
+                    Try Again
+                </button>
+                
+                <button onclick="closeWebView()" style="padding: 1rem 2rem; background: white; color: #000; border: 1px solid #000; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%;">
+                    Close
+                </button>
+            </div>
+        `;
+        } else if (event.data.type === "PAYPAL_ERROR") {
+          console.log("⚠️ Payment error:", event.data.error);
+          alert("Error: " + (event.data.error || "Unknown error"));
+        }
+      });
+
+      // Función para cerrar el webview (comunica al nativo)
+      function closeWebView() {
         if (window.webkit?.messageHandlers?.appBridge) {
           window.webkit.messageHandlers.appBridge.postMessage({
-            action: 'paypal_appswitch_native',
-            amount: '68.45',
-            currency: 'USD',
-            orderId: 'ZARA-' + Date.now()
+            action: "close_webview",
           });
         } else {
-          alert('Native bridge not available');
-          btnPay.disabled = false;
-          btnPay.textContent = 'Pay with PayPal (App Switch)';
+          console.log("Cannot close webview - native bridge not available");
         }
       }
-    });
-    
-    // Escuchar respuesta del nativo
-    window.addEventListener('message', (event) => {
-      console.log('Message from native:', event.data);
-      
-      if (event.data.type === 'PAYPAL_SUCCESS') {
-        document.body.innerHTML = `
-          <div style="text-align: center; padding: 3rem 1rem; font-family: -apple-system;">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-            <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">Payment Successful</h1>
-            <p style="color: #666; margin-bottom: 2rem;">Your order has been confirmed.</p>
-            <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; text-align: left;">
-              <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Order ID:</strong><br><span style="font-family: monospace; font-size: 0.75rem;">${event.data.orderId || 'N/A'}</span></p>
-              <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Capture ID:</strong><br><span style="font-family: monospace; font-size: 0.75rem;">${event.data.captureId || 'N/A'}</span></p>
-            </div>
-            <button onclick="location.reload()" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%;">
-              Continue Shopping
-            </button>
-          </div>
-        `;
-      } else if (event.data.type === 'PAYPAL_CANCEL') {
-        alert('❌ Payment cancelled');
-        btnPay.disabled = false;
-        btnPay.textContent = selectedMethod === 'paypal-redirect' ? 'Pay with PayPal' : 'Pay with PayPal (App Switch)';
-      } else if (event.data.type === 'PAYPAL_ERROR') {
-        alert('⚠️ Error: ' + (event.data.error || 'Unknown error'));
-        btnPay.disabled = false;
-        btnPay.textContent = selectedMethod === 'paypal-redirect' ? 'Pay with PayPal' : 'Pay with PayPal (App Switch)';
-      }
-    });
-  </script>
-  
-</body>
+    </script>
+  </body>
 </html>
