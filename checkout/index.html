@@ -452,6 +452,36 @@
       })
 
       // ============================================
+// LISTEN FOR UNIVERSAL LINK RETURN
+// ============================================
+window.addEventListener('paypalUniversalLinkReturn', async (event) => {
+  console.log('🔗 Universal Link return detected!', event.detail)
+  
+  const { status, token, payerId } = event.detail
+  
+  if (status === 'success') {
+    console.log('✅ Payment approved, capturing...')
+    await handlePaymentReturn(token, payerId)
+  } else if (status === 'cancel') {
+    console.log('❌ Payment cancelled')
+    showCancelScreen()
+  }
+})
+
+// También escuchar via postMessage
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'UNIVERSAL_LINK_RETURN') {
+    console.log('📨 Universal Link message:', event.data)
+    
+    if (event.data.status === 'success') {
+      handlePaymentReturn(event.data.token, event.data.payerId)
+    } else if (event.data.status === 'cancel') {
+      showCancelScreen()
+    }
+  }
+})
+
+      // ============================================
       // HANDLE PAYMENT FLOW (BOTH A & B)
       // ============================================
       async function handlePayment() {
