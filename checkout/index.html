@@ -192,6 +192,75 @@
         margin-top: 0.25rem;
       }
 
+      /* Success/Error screens */
+      .result-screen {
+        text-align: center;
+        padding: 3rem 1rem;
+      }
+
+      .result-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+
+      .result-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+
+      .result-message {
+        color: #666;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+      }
+
+      .result-details {
+        background: #f5f5f5;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        text-align: left;
+      }
+
+      .result-detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .result-detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .result-detail-label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .result-detail-value {
+        font-family: monospace;
+        font-size: 0.75rem;
+      }
+
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #000;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
       @media (max-width: 480px) {
         .container {
           padding: 1.5rem 1rem;
@@ -217,7 +286,7 @@
       <div class="logo">MERCHANT</div>
     </div>
 
-    <div class="container">
+    <div class="container" id="checkout-container">
       <div class="total">
         <span class="total-label">Total</span>
         <span class="total-amount">$ 68.45</span>
@@ -227,7 +296,7 @@
 
       <div class="payment-grid">
         <!-- Credit/Debit Card - DISABLED -->
-        <div class="payment-card" data-method="card">
+        <div class="payment-card disabled" data-method="card">
           <div class="checkmark">✓</div>
           <div class="payment-icon">💳</div>
           <div class="payment-name">Credit/Debit Card</div>
@@ -235,7 +304,7 @@
         </div>
 
         <!-- Gift Card - DISABLED -->
-        <div class="payment-card" data-method="giftcard">
+        <div class="payment-card disabled" data-method="giftcard">
           <div class="checkmark">✓</div>
           <div class="payment-icon">🎁</div>
           <div class="payment-name">Gift Card</div>
@@ -255,11 +324,12 @@
           <div class="payment-name">PayPal</div>
         </div>
 
-        <!-- PayPal (AppSwitch) -->
-        <div class="payment-card" data-method="paypal-appswitch">
+        <!-- PayPal (AppSwitch) - Coming Soon -->
+        <div class="payment-card disabled" data-method="paypal-appswitch">
           <div class="checkmark">✓</div>
           <div class="payment-icon">📱</div>
           <div class="payment-name">PayPal AppSwitch</div>
+          <div class="coming-soon">Coming soon</div>
         </div>
       </div>
 
@@ -271,327 +341,330 @@
     </div>
 
     <script>
-      // Al cargar la página, verificar si es un return de PayPal
+      // ============================================
+      // CONFIGURATION
+      // ============================================
+      const SUPABASE_FUNCTION_URL = 'https://hhjdnabslryfnyeopzvs.supabase.co/functions/v1/appswitch_backend'
+      const SUPABASE_ANON_KEY = 'TU_ANON_KEY_AQUI' // ⚠️ REEMPLAZAR CON TU KEY
+
+      const AMOUNT = '68.45'
+      const CURRENCY = 'USD'
+
+      // ============================================
+      // STATE
+      // ============================================
+      let selectedMethod = null
+
+      // ============================================
+      // DOM ELEMENTS
+      // ============================================
+      const cards = document.querySelectorAll(".payment-card")
+      const btnPay = document.getElementById("btn-pay")
+      const infoText = document.getElementById("info-text")
+      const checkoutContainer = document.getElementById("checkout-container")
+
+      // ============================================
+      // CHECK IF RETURNING FROM PAYPAL
+      // ============================================
       window.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.location.search);
-        const payment = params.get("payment");
-        const token = params.get("token");
-        const PayerID = params.get("PayerID");
+        const params = new URLSearchParams(window.location.search)
+        const payment = params.get("payment")
+        const token = params.get("token")
+        const PayerID = params.get("PayerID")
 
         if (payment === "success" && token) {
-          console.log("✅ Payment return detected");
-          console.log("Token:", token);
-          console.log("PayerID:", PayerID);
-
-          // Mostrar success
-          document.body.innerHTML = `
-            <div style="text-align: center; padding: 3rem 1rem; font-family: -apple-system;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-                <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">Payment Successful</h1>
-                <p style="color: #666; margin-bottom: 2rem;">Your order has been confirmed.</p>
-                <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
-                    <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Order ID:</strong> ${token}</p>
-                    <p style="font-size: 0.85rem; margin: 0.5rem 0;"><strong>Payer ID:</strong> ${
-                      PayerID || "N/A"
-                    }</p>
-                </div>
-                <button onclick="location.href='/checkout/'" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; cursor: pointer; width: 100%;">
-                    New Payment
-                </button>
-            </div>
-        `;
+          console.log("✅ Payment return detected - SUCCESS")
+          console.log("Token:", token)
+          console.log("PayerID:", PayerID)
+          
+          handlePaymentReturn(token, PayerID)
+          
         } else if (payment === "cancel") {
-          console.log("❌ Payment cancelled");
-          alert("Payment was cancelled");
-          // Recargar para volver al checkout
-          location.href = "/checkout/";
+          console.log("❌ Payment return detected - CANCEL")
+          showCancelScreen()
         }
-      });
+      })
 
-      // ⚠️ CREDENCIALES SANDBOX
-      const PAYPAL_CLIENT_ID =
-        "AZ0YQDOagH9Y6h9Q0OflBOfdVBChMWeIVL6EtZUrgIm7d6m67xugAeMUbSnTpFvWb5D4xYx9YCzJQA4T";
-      const PAYPAL_CLIENT_SECRET =
-        "EImmF9rf6T4c_6p39HtK13GDKdhl2G6k83DqKWgz-zbOkC1XCBDpMw2EUq-QGdBNFPhrR9fvodCtfYd8";
-      const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
-
-      let accessToken = null;
-      let selectedMethod = null;
-
-      const cards = document.querySelectorAll(".payment-card");
-      const btnPay = document.getElementById("btn-pay");
-      const infoText = document.getElementById("info-text");
-
-      // Manejar selección de método de pago
+      // ============================================
+      // HANDLE PAYMENT SELECTION
+      // ============================================
       cards.forEach((card) => {
         card.addEventListener("click", () => {
           // Ignorar clicks en cards disabled
           if (card.classList.contains("disabled")) {
-            return;
+            return
           }
 
           // Remover selección previa
-          cards.forEach((c) => c.classList.remove("selected"));
+          cards.forEach((c) => c.classList.remove("selected"))
 
           // Seleccionar esta card
-          card.classList.add("selected");
-          selectedMethod = card.dataset.method;
+          card.classList.add("selected")
+          selectedMethod = card.dataset.method
 
-          console.log("Selected:", selectedMethod);
+          console.log("✓ Selected:", selectedMethod)
 
           // Actualizar botón y texto según método
           if (selectedMethod === "paypal-redirect") {
-            btnPay.disabled = false;
-            btnPay.textContent = "Pay with PayPal";
-            infoText.textContent =
-              "You will be redirected to PayPal website in this webview.";
+            btnPay.disabled = false
+            btnPay.textContent = "Pay with PayPal"
+            infoText.textContent = "You will be redirected to PayPal to complete your payment."
           } else if (selectedMethod === "paypal-appswitch") {
-            btnPay.disabled = false;
-            btnPay.textContent = "Pay with PayPal (App Switch)";
-            infoText.textContent =
-              "Payment will be handled by the native app component.";
+            btnPay.disabled = false
+            btnPay.textContent = "Pay with PayPal (App Switch)"
+            infoText.textContent = "Payment will be handled by the native app component."
           } else {
-            btnPay.disabled = true;
-            btnPay.textContent = "Continue to Payment";
-            infoText.textContent = "This payment method is coming soon.";
+            btnPay.disabled = true
+            btnPay.textContent = "Continue to Payment"
+            infoText.textContent = "This payment method is coming soon."
           }
-        });
-      });
+        })
+      })
 
-      // Obtener access token
-      async function getAccessToken() {
-        if (accessToken) return accessToken;
+      // ============================================
+      // OPTION A: PAYPAL REDIRECT FLOW
+      // ============================================
+      async function handlePayPalRedirect() {
+        console.log("🌐 Starting PayPal Redirect flow...")
+        
+        btnPay.disabled = true
+        btnPay.textContent = "Creating order..."
 
-        console.log("🔑 Getting token...");
+        try {
+          // 1. Create order via Supabase backend
+          console.log("📦 Creating order via Supabase...")
+          
+          const response = await fetch(`${SUPABASE_FUNCTION_URL}/create-order`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              amount: AMOUNT,
+              currency: CURRENCY,
+              // NO incluir device_info para flujo normal (sin app switch)
+              return_url: `${window.location.origin}/checkout/?payment=success`,
+              cancel_url: `${window.location.origin}/checkout/?payment=cancel`
+            })
+          })
 
-        const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`);
+          if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`HTTP ${response.status}: ${errorText}`)
+          }
 
-        const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-          method: "POST",
-          headers: {
-            Authorization: `Basic ${auth}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: "grant_type=client_credentials",
-        });
+          const data = await response.json()
 
-        const data = await response.json();
+          if (!data.success) {
+            throw new Error(data.error || 'Failed to create order')
+          }
 
-        if (data.access_token) {
-          console.log("✅ Token obtained");
-          accessToken = data.access_token;
-          return accessToken;
+          console.log("✅ Order created:", data.order.id)
+          console.log("📊 App Switch Eligible:", data.order.app_switch_eligibility)
+
+          // 2. Get payer-action URL
+          const payerActionLink = data.order.links.find(link => 
+            link.rel === 'payer-action' || link.rel === 'approve'
+          )
+
+          if (!payerActionLink) {
+            throw new Error('No payer-action URL in response')
+          }
+
+          console.log("🔗 Payer action URL:", payerActionLink.href)
+
+          // 3. Store order ID for when user returns
+          sessionStorage.setItem('paypal_order_id', data.order.id)
+          sessionStorage.setItem('paypal_order_amount', AMOUNT)
+
+          // 4. Redirect to PayPal
+          console.log("↗️ Redirecting to PayPal...")
+          window.location.href = payerActionLink.href
+
+        } catch (error) {
+          console.error("❌ Error creating order:", error)
+          alert(`Error: ${error.message}`)
+          btnPay.disabled = false
+          btnPay.textContent = "Pay with PayPal"
         }
-
-        throw new Error("Failed to get token");
       }
 
-      // Crear orden
-      async function createPayPalOrder(amount, currency) {
-        console.log(`🚀 Creating order: ${amount} ${currency}`);
+      // ============================================
+      // HANDLE PAYMENT RETURN (SUCCESS)
+      // ============================================
+      async function handlePaymentReturn(token, payerID) {
+        console.log("💰 Processing payment return...")
+        
+        // Show processing screen
+        showProcessingScreen()
 
-        const token = await getAccessToken();
+        try {
+          // Get stored order ID (or use token as fallback)
+          const orderId = sessionStorage.getItem('paypal_order_id') || token
+          const amount = sessionStorage.getItem('paypal_order_amount') || AMOUNT
 
-        const orderBody = {
-          intent: "CAPTURE",
-          purchase_units: [
-            {
-              amount: {
-                currency_code: currency,
-                value: amount,
-              },
-              description: "Zara Demo Purchase",
-            },
-          ],
-          payment_source: {
-            paypal: {
-              experience_context: {
-                payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
-                brand_name: "Zara",
-                locale: "en-US",
-                landing_page: "LOGIN",
-                shipping_preference: "NO_SHIPPING",
-                user_action: "PAY_NOW",
-                // ✅ AGREGAR return URLs
-                return_url:
-                  "https://carlosdef90.github.io/checkout/?payment=success",
-                cancel_url:
-                  "https://carlosdef90.github.io/checkout/?payment=cancel",
-              },
-            },
-          },
-        };
+          console.log("📦 Order ID:", orderId)
+          console.log("🎫 Token:", token)
+          console.log("👤 Payer ID:", payerID)
 
-        const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(orderBody),
-        });
-
-        const data = await response.json();
-
-        if (data.id) {
-          console.log("✅ Order:", data.id);
-
-          // Buscar approval URL
-          let approvalURL = null;
-          if (data.links) {
-            for (const link of data.links) {
-              if (link.rel === "payer-action" || link.rel === "approve") {
-                approvalURL = link.href;
-                break;
-              }
+          // Capture the order via Supabase backend
+          console.log("🔄 Capturing order...")
+          
+          const response = await fetch(`${SUPABASE_FUNCTION_URL}/capture/${orderId}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
             }
+          })
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`HTTP ${response.status}: ${errorText}`)
           }
 
-          return (
-            approvalURL ||
-            `https://www.sandbox.paypal.com/checkoutnow?token=${data.id}`
-          );
-        }
+          const data = await response.json()
 
-        throw new Error(data.message || "Failed to create order");
+          if (!data.success) {
+            throw new Error(data.error || 'Failed to capture order')
+          }
+
+          console.log("✅ Order captured:", data.capture.status)
+
+          // Clear session storage
+          sessionStorage.removeItem('paypal_order_id')
+          sessionStorage.removeItem('paypal_order_amount')
+
+          // Show success screen
+          showSuccessScreen(orderId, data.capture.id, amount)
+
+        } catch (error) {
+          console.error("❌ Error capturing payment:", error)
+          showErrorScreen(error.message)
+        }
       }
 
-      // Click en botón Pay
-      btnPay.addEventListener("click", async () => {
-        if (!selectedMethod) return;
+      // ============================================
+      // UI: PROCESSING SCREEN
+      // ============================================
+      function showProcessingScreen() {
+        checkoutContainer.innerHTML = `
+          <div class="result-screen">
+            <div class="spinner"></div>
+            <h1 class="result-title">Processing Payment...</h1>
+            <p class="result-message">Please wait while we confirm your payment</p>
+          </div>
+        `
+      }
 
-        btnPay.disabled = true;
-
-        if (selectedMethod === "paypal-redirect") {
-          // Opción 1: Checkout Redirect (crea orden y redirige en webview)
-          console.log("🌐 PayPal Redirect flow");
-          btnPay.textContent = "Creating order...";
-
-          try {
-            const approvalURL = await createPayPalOrder("68.45", "USD");
-            console.log("🔗 Redirecting to:", approvalURL);
-
-            // Redirigir en el webview
-            window.location.href = approvalURL;
-          } catch (error) {
-            console.error("❌ Error:", error);
-            alert("Error: " + error.message);
-            btnPay.disabled = false;
-            btnPay.textContent = "Pay with PayPal";
-          }
-        } else if (selectedMethod === "paypal-appswitch") {
-          // Opción 2: AppSwitch (envía info al nativo)
-          console.log("📱 PayPal AppSwitch flow");
-          btnPay.textContent = "Sending to native...";
-
-          if (window.webkit?.messageHandlers?.appBridge) {
-            window.webkit.messageHandlers.appBridge.postMessage({
-              action: "paypal_appswitch_native",
-              amount: "68.45",
-              currency: "USD",
-              orderId: "ZARA-" + Date.now(),
-            });
-          } else {
-            alert("Native bridge not available");
-            btnPay.disabled = false;
-            btnPay.textContent = "Pay with PayPal (App Switch)";
-          }
-        }
-      });
-
-      // Escuchar mensajes del componente nativo
-      window.addEventListener("message", (event) => {
-        console.log("📨 Message from native:", event.data);
-
-        if (event.data.type === "PAYPAL_SUCCESS") {
-          console.log("✅ Payment success received from native");
-
-          // Mostrar pantalla de éxito
-          document.body.innerHTML = `
-            <div class="header">
-                <div class="logo">ZARA</div>
+      // ============================================
+      // UI: SUCCESS SCREEN
+      // ============================================
+      function showSuccessScreen(orderId, captureId, amount) {
+        checkoutContainer.innerHTML = `
+          <div class="result-screen">
+            <div class="result-icon">✅</div>
+            <h1 class="result-title">Payment Successful!</h1>
+            <p class="result-message">Your order has been confirmed.</p>
+            
+            <div class="result-details">
+              <div class="result-detail-row">
+                <span class="result-detail-label">Amount</span>
+                <span class="result-detail-value">$${amount} USD</span>
+              </div>
+              <div class="result-detail-row">
+                <span class="result-detail-label">Order ID</span>
+                <span class="result-detail-value">${orderId}</span>
+              </div>
+              <div class="result-detail-row">
+                <span class="result-detail-label">Capture ID</span>
+                <span class="result-detail-value">${captureId}</span>
+              </div>
             </div>
             
-            <div class="container" style="text-align: center; padding-top: 3rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-                
-                <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">
-                    Payment Successful
-                </h1>
-                
-                <p style="color: #666; margin-bottom: 2rem; font-size: 0.9rem;">
-                    Your order has been confirmed.
-                </p>
-                
-                <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; text-align: left;">
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #e5e5e5;">
-                        <span style="font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Order ID</span>
-                        <span style="font-family: monospace; font-size: 0.75rem;">${
-                          event.data.orderId || "N/A"
-                        }</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
-                        <span style="font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Capture ID</span>
-                        <span style="font-family: monospace; font-size: 0.75rem;">${
-                          event.data.captureId || "N/A"
-                        }</span>
-                    </div>
-                </div>
-                
-                <button onclick="location.href='/checkout/'" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%; margin-bottom: 1rem;">
-                    Back to Checkout
-                </button>
-                
-                <button onclick="closeWebView()" style="padding: 1rem 2rem; background: white; color: #000; border: 1px solid #000; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%;">
-                    Close
-                </button>
-            </div>
-        `;
-        } else if (event.data.type === "PAYPAL_CANCEL") {
-          console.log("❌ Payment cancelled");
-
-          // Mostrar pantalla de cancelación
-          document.body.innerHTML = `
-            <div class="header">
-                <div class="logo">ZARA</div>
-            </div>
+            <button onclick="location.href='/checkout/'" class="btn" style="margin-bottom: 1rem;">
+              New Payment
+            </button>
             
-            <div class="container" style="text-align: center; padding-top: 3rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
-                
-                <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">
-                    Payment Cancelled
-                </h1>
-                
-                <p style="color: #666; margin-bottom: 2rem; font-size: 0.9rem;">
-                    Your payment was not completed.
-                </p>
-                
-                <button onclick="location.href='/checkout/'" style="padding: 1rem 2rem; background: #000; color: white; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%; margin-bottom: 1rem;">
-                    Try Again
-                </button>
-                
-                <button onclick="closeWebView()" style="padding: 1rem 2rem; background: white; color: #000; border: 1px solid #000; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; width: 100%;">
-                    Close
-                </button>
-            </div>
-        `;
-        } else if (event.data.type === "PAYPAL_ERROR") {
-          console.log("⚠️ Payment error:", event.data.error);
-          alert("Error: " + (event.data.error || "Unknown error"));
-        }
-      });
+            <button onclick="closeWebView()" class="btn" style="background: white; color: #000; border: 1px solid #000;">
+              Close
+            </button>
+          </div>
+        `
+      }
 
-      // Función para cerrar el webview (comunica al nativo)
+      // ============================================
+      // UI: CANCEL SCREEN
+      // ============================================
+      function showCancelScreen() {
+        checkoutContainer.innerHTML = `
+          <div class="result-screen">
+            <div class="result-icon">❌</div>
+            <h1 class="result-title">Payment Cancelled</h1>
+            <p class="result-message">Your payment was not completed.</p>
+            
+            <button onclick="location.href='/checkout/'" class="btn" style="margin-bottom: 1rem;">
+              Try Again
+            </button>
+            
+            <button onclick="closeWebView()" class="btn" style="background: white; color: #000; border: 1px solid #000;">
+              Close
+            </button>
+          </div>
+        `
+      }
+
+      // ============================================
+      // UI: ERROR SCREEN
+      // ============================================
+      function showErrorScreen(errorMessage) {
+        checkoutContainer.innerHTML = `
+          <div class="result-screen">
+            <div class="result-icon">⚠️</div>
+            <h1 class="result-title">Payment Failed</h1>
+            <p class="result-message">${errorMessage}</p>
+            
+            <button onclick="location.href='/checkout/'" class="btn" style="margin-bottom: 1rem;">
+              Try Again
+            </button>
+            
+            <button onclick="closeWebView()" class="btn" style="background: white; color: #000; border: 1px solid #000;">
+              Close
+            </button>
+          </div>
+        `
+      }
+
+      // ============================================
+      // CLOSE WEBVIEW (Native bridge)
+      // ============================================
       function closeWebView() {
         if (window.webkit?.messageHandlers?.appBridge) {
           window.webkit.messageHandlers.appBridge.postMessage({
-            action: "close_webview",
-          });
+            action: "close_webview"
+          })
         } else {
-          console.log("Cannot close webview - native bridge not available");
+          console.log("Cannot close webview - native bridge not available")
         }
       }
+
+      // ============================================
+      // PAY BUTTON CLICK
+      // ============================================
+      btnPay.addEventListener("click", async () => {
+        if (!selectedMethod) return
+
+        if (selectedMethod === "paypal-redirect") {
+          await handlePayPalRedirect()
+        } else if (selectedMethod === "paypal-appswitch") {
+          // Coming soon...
+          alert("App Switch flow - Coming soon!")
+        }
+      })
+
+      console.log("✅ Checkout page loaded")
+      console.log("🔧 Supabase URL:", SUPABASE_FUNCTION_URL)
     </script>
   </body>
 </html>
