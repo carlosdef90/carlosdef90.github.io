@@ -324,12 +324,11 @@
           <div class="payment-name">PayPal</div>
         </div>
 
-        <!-- PayPal (AppSwitch) - Coming Soon -->
-        <div class="payment-card disabled" data-method="paypal-appswitch">
+        <!-- PayPal (AppSwitch) - ✅ ENABLED -->
+        <div class="payment-card" data-method="paypal-appswitch">
           <div class="checkmark">✓</div>
           <div class="payment-icon">📱</div>
           <div class="payment-name">PayPal AppSwitch</div>
-          <div class="coming-soon">Coming soon</div>
         </div>
       </div>
 
@@ -362,6 +361,37 @@
       const btnPay = document.getElementById("btn-pay")
       const infoText = document.getElementById("info-text")
       const checkoutContainer = document.getElementById("checkout-container")
+
+      // ============================================
+      // DEVICE INFO FROM NATIVE APP
+      // ============================================
+      async function getDeviceInfoFromNative() {
+        console.log("📱 Requesting device info from native app...")
+        
+        return new Promise((resolve) => {
+          // Check if we're in native app
+          if (!window.webkit?.messageHandlers?.deviceInfoHandler) {
+            console.log("⚠️ Not in native app, using defaults")
+            resolve(null)
+            return
+          }
+
+          // Set up callback for native response
+          window.deviceInfoCallback = (info) => {
+            console.log("✅ Received device info:", info)
+            resolve(info)
+          }
+
+          // Request device info from native
+          window.webkit.messageHandlers.deviceInfoHandler.postMessage("GET_DEVICE_INFO")
+
+          // Timeout after 2 seconds
+          setTimeout(() => {
+            console.log("⏱️ Device info request timeout")
+            resolve(null)
+          }, 2000)
+        })
+      }
 
       // ============================================
       // CHECK IF RETURNING FROM PAYPAL
@@ -411,8 +441,8 @@
             infoText.textContent = "You will be redirected to PayPal to complete your payment."
           } else if (selectedMethod === "paypal-appswitch") {
             btnPay.disabled = false
-            btnPay.textContent = "Pay with PayPal (App Switch)"
-            infoText.textContent = "Payment will be handled by the native app component."
+            btnPay.textContent = "Pay with PayPal App"
+            infoText.textContent = "Payment will open in the PayPal app for faster checkout."
           } else {
             btnPay.disabled = true
             btnPay.textContent = "Continue to Payment"
@@ -422,15 +452,44 @@
       })
 
       // ============================================
-      // OPTION A: PAYPAL REDIRECT FLOW
+      // HANDLE PAYMENT FLOW (BOTH A & B)
       // ============================================
-      async function handlePayPalRedirect() {
-        console.log("🌐 Starting PayPal Redirect flow...")
+      async function handlePayment() {
+        console.log(`🚀 Starting payment flow: ${selectedMethod}`)
         
         btnPay.disabled = true
+        const originalText = btnPay.textContent
         btnPay.textContent = "Creating order..."
 
         try {
+          // Get device info (only for app switch)
+          let deviceInfo = null
+          if (selectedMethod === "paypal-appswitch") {
+            deviceInfo = await getDeviceInfoFromNative()
+            
+            if (!deviceInfo) {
+              console.log("⚠️ No device info available, falling back to normal flow")
+              // Fallback to normal PayPal flow
+              selectedMethod = "paypal-redirect"
+            }
+          }
+
+          // Create order request body
+          const orderRequest = {
+            amount: AMOUNT,
+            currency: CURRENCY,
+            return_url: `${window.location.origin}/checkout/?payment=success`,
+            cancel_url: `${window.location.origin}/checkout/?payment=cancel`
+          }
+
+          // Add device_info only if we have it
+          if (deviceInfo) {
+            orderRequest.device_info = deviceInfo
+            console.log("📱 Including device_info in order creation")
+          } else {
+            console.log("🌐 Creating order without device_info (normal flow)")
+          }
+
           // 1. Create order via Supabase backend
           console.log("📦 Creating order via Supabase...")
           
@@ -440,13 +499,7 @@
               'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              amount: AMOUNT,
-              currency: CURRENCY,
-              // NO incluir device_info para flujo normal (sin app switch)
-              return_url: `${window.location.origin}/checkout/?payment=success`,
-              cancel_url: `${window.location.origin}/checkout/?payment=cancel`
-            })
+            body: JSON.stringify(orderRequest)
           })
 
           if (!response.ok) {
@@ -463,7 +516,7 @@
           console.log("✅ Order created:", data.order.id)
           console.log("📊 App Switch Eligible:", data.order.app_switch_eligibility)
 
-          // 2. Get payer-action URL
+          // Get payer-action URL
           const payerActionLink = data.order.links.find(link => 
             link.rel === 'payer-action' || link.rel === 'approve'
           )
@@ -472,21 +525,53 @@
             throw new Error('No payer-action URL in response')
           }
 
-          console.log("🔗 Payer action URL:", payerActionLink.href)
+          const payerActionURL = payerActionLink.href
+          console.log("🔗 Payer action URL:", payerActionURL)
 
-          // 3. Store order ID for when user returns
+          // Extract token from URL
+          const urlObj = new URL(payerActionURL)
+          const token = urlObj.searchParams.get('token')
+          console.log("🎫 Token:", token)
+
+          // Store order info
           sessionStorage.setItem('paypal_order_id', data.order.id)
           sessionStorage.setItem('paypal_order_amount', AMOUNT)
 
-          // 4. Redirect to PayPal
-          console.log("↗️ Redirecting to PayPal...")
-          window.location.href = payerActionLink.href
+          // 2. Decide flow based on app_switch_eligibility
+          if (data.order.app_switch_eligibility === true && selectedMethod === "paypal-appswitch") {
+            console.log("🎯 App Switch eligible - notifying native app")
+            
+            // Notify native app to attempt App Switch
+            if (window.webkit?.messageHandlers?.paypalHandler) {
+              window.webkit.messageHandlers.paypalHandler.postMessage({
+                action: "ATTEMPT_APP_SWITCH",
+                orderId: data.order.id,
+                token: token,
+                payerActionURL: payerActionURL
+              })
+              
+              console.log("✅ Notification sent to native app")
+              btnPay.textContent = "Opening PayPal app..."
+              
+            } else {
+              console.log("⚠️ Native handler not found, falling back to web")
+              // Fallback to normal redirect
+              window.location.href = payerActionURL
+            }
+            
+          } else {
+            console.log("🌐 Using normal redirect flow")
+            console.log("↗️ Redirecting to PayPal...")
+            
+            // Normal redirect flow
+            window.location.href = payerActionURL
+          }
 
         } catch (error) {
-          console.error("❌ Error creating order:", error)
+          console.error("❌ Error:", error)
           alert(`Error: ${error.message}`)
           btnPay.disabled = false
-          btnPay.textContent = "Pay with PayPal"
+          btnPay.textContent = originalText
         }
       }
 
@@ -650,21 +735,61 @@
       }
 
       // ============================================
+      // LISTEN FOR MESSAGES FROM NATIVE APP
+      // ============================================
+      window.addEventListener("message", (event) => {
+        console.log("📨 Message from native:", event.data)
+        
+        const { type, orderId, captureId, error } = event.data
+
+        if (type === "PAYPAL_SUCCESS") {
+          console.log("✅ Payment success from native")
+          const amount = sessionStorage.getItem('paypal_order_amount') || AMOUNT
+          showSuccessScreen(orderId, captureId, amount)
+          
+        } else if (type === "PAYPAL_CANCEL") {
+          console.log("❌ Payment cancelled from native")
+          showCancelScreen()
+          
+        } else if (type === "PAYPAL_ERROR") {
+          console.log("⚠️ Payment error from native:", error)
+          showErrorScreen(error)
+          
+        } else if (type === "APP_SWITCH_FAILED") {
+          console.log("⚠️ App Switch failed, redirecting to web...")
+          
+          // Fallback: redirect to payer action URL
+          const payerActionURL = event.data.fallbackURL
+          if (payerActionURL) {
+            window.location.href = payerActionURL
+          }
+        }
+      })
+
+      // Alternative: Custom event listener (for iOS)
+      window.addEventListener("paypalPaymentSuccess", (event) => {
+        console.log("✅ Payment success event:", event.detail)
+        const { orderId, captureId } = event.detail
+        const amount = sessionStorage.getItem('paypal_order_amount') || AMOUNT
+        showSuccessScreen(orderId, captureId, amount)
+      })
+
+      window.addEventListener("paypalPaymentFailed", (event) => {
+        console.log("❌ Payment failed event:", event.detail)
+        showErrorScreen(event.detail.error)
+      })
+
+      // ============================================
       // PAY BUTTON CLICK
       // ============================================
       btnPay.addEventListener("click", async () => {
         if (!selectedMethod) return
-
-        if (selectedMethod === "paypal-redirect") {
-          await handlePayPalRedirect()
-        } else if (selectedMethod === "paypal-appswitch") {
-          // Coming soon...
-          alert("App Switch flow - Coming soon!")
-        }
+        await handlePayment()
       })
 
       console.log("✅ Checkout page loaded")
       console.log("🔧 Supabase URL:", SUPABASE_FUNCTION_URL)
+      console.log("🎯 Available methods: paypal-redirect, paypal-appswitch")
     </script>
   </body>
 </html>
