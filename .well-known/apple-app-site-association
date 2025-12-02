@@ -8,6 +8,9 @@
           "/paypal-return/*",
           "/paypal-cancel",
           "/paypal-cancel/*"
+        ],
+        "NOT": [
+          "/checkout/*"
         ]
       }
     ]
