@@ -560,18 +560,22 @@
         }
       }
 
-      // Create order request body
       const orderRequest = {
         amount: AMOUNT,
         currency: CURRENCY
       }
-
-      // Add device_info only if we have it
+      
+      // ✅ NUEVO: Especificar return URLs según el flujo
       if (deviceInfo) {
+        // App Switch: Usar Universal Links
         orderRequest.device_info = deviceInfo
-        console.log("📱 Including device_info in order creation")
+        console.log("📱 App Switch flow - using Universal Links for return")
+        // No enviamos return_url, usa los defaults (que son Universal Links)
       } else {
-        console.log("🌐 Creating order without device_info (normal flow)")
+        // Normal flow: Usar URLs con query params que NO activen Universal Links
+        orderRequest.return_url = `${window.location.origin}/checkout/?payment=success`
+        orderRequest.cancel_url = `${window.location.origin}/checkout/?payment=cancel`
+        console.log("🌐 Normal flow - using /checkout/ URLs for return")
       }
 
       // 1. Create order via Supabase backend
