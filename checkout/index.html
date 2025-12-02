@@ -1029,38 +1029,5 @@
   console.log("🔧 Supabase URL:", SUPABASE_FUNCTION_URL)
   console.log("🎯 Available methods: paypal-redirect, paypal-appswitch")
 </script>
-```
-
----
-
-## 🎯 CAMBIOS PRINCIPALES:
-
-1. ✅ **Más logs detallados** en CADA paso
-2. ✅ **Listener de `paypalUniversalLinkReturn`** al principio (antes del DOM)
-3. ✅ **Listener de `message`** consolidado con todos los tipos
-4. ✅ **Logs de cada función** para saber exactamente dónde está
-5. ✅ **Sin ANON_KEY** en los fetch (función pública)
-
----
-
-Ahora cuando pruebes, deberías ver en la consola del Safari Web Inspector (conectado a tu iPhone):
-```
-🚀 Checkout script loaded
-📄 DOM Content Loaded
-✓ Selected: paypal-appswitch
-💳 Pay button clicked
-🚀 Starting payment flow: paypal-appswitch
-📱 Requesting device info...
-✅ Received device info: {...}
-📦 Creating order via Supabase...
-✅ Order created: XXX
-📲 Sending ATTEMPT_APP_SWITCH to native
-...
-🔗 Universal Link return event!
-✅ Payment approved via Universal Link event
-💰 Processing payment return...
-🔄 Capturing order via Supabase...
-✅ Order captured successfully!
-✅ Showing success screen
   </body>
 </html>
